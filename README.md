@@ -77,6 +77,15 @@ The work-order and proposal forms POST JSON to `/api/submit`, which sends each s
 
 Each email's `reply_to` is set to the submitter, so replying from the inbox goes straight back to the prospect. A hidden honeypot field blocks basic spam bots. If `RESEND_API_KEY` is missing, the form shows an error telling the visitor to email `info@back9trades.com` directly — it never silently drops a lead.
 
+### Optional: forward inquiries to back9.home
+
+`/api/submit` can also forward the same submission to the back9.home app's inquiry intake webhook, in addition to the Resend email above (which remains the fallback record regardless). Set these in Vercel (Production + Preview) to enable it:
+
+- `B9_INQUIRY_WEBHOOK_URL` — back9.home's inquiry webhook endpoint
+- `B9_INQUIRY_SECRET` — shared bearer secret for that endpoint
+
+If either var is unset, forwarding is skipped silently and the site works exactly as before. The forward call is best-effort — it can never fail the form submission; failures are logged to the Vercel function log only.
+
 ## Print to PDF
 
 The brand-package documents are letter-size and print clean. From any open file: `Cmd+P` → **Save as PDF**.

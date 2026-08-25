@@ -8,6 +8,12 @@
 //   LEAD_FROM       — verified sender, e.g. "Back9 Trades <portal@back9trades.com>"
 //                     Until the domain is verified in Resend, use "onboarding@resend.dev"
 //                     (Resend only delivers that sender to the account owner's email).
+//
+// Optional env vars — forward the same submission to the back9.home inquiry intake:
+//   B9_INQUIRY_WEBHOOK_URL — back9.home's inquiry webhook endpoint
+//   B9_INQUIRY_SECRET      — shared bearer secret for that endpoint
+// If either is unset, forwarding is skipped silently; the Resend email above
+// remains the fallback record and the form is unaffected either way.
 
 const esc = (s) =>
   String(s == null ? '' : s)
@@ -65,6 +71,28 @@ function buildEmail(p) {
     `</table>`;
 
   return { subject, text, html };
+}
+
+async function forwardToApp(payload) {
+  const url = process.env.B9_INQUIRY_WEBHOOK_URL;
+  const secret = process.env.B9_INQUIRY_SECRET;
+  if (!url || !secret) return; // not configured -> no-op, form unaffected
+  try {
+    // Must be awaited: Vercel functions freeze after the response returns,
+    // so a fire-and-forget fetch would be killed mid-flight.
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${secret}`,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch (err) {
+    // The webhook must never fail the form; info@ email is the fallback record.
+    console.error('inquiry webhook failed:', err && err.message);
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -134,6 +162,8 @@ module.exports = async function handler(req, res) {
       console.error('Resend error', resp.status, detail);
       return res.status(502).json({ error: 'Email service rejected the request.' });
     }
+
+    await forwardToApp(p);
 
     return res.status(200).json({ ok: true });
   } catch (err) {
