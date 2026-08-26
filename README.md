@@ -86,6 +86,8 @@ Each email's `reply_to` is set to the submitter, so replying from the inbox goes
 
 If either var is unset, forwarding is skipped silently and the site works exactly as before. The forward call is best-effort — it can never fail the form submission; failures are logged to the Vercel function log only.
 
+**Redeploy after setting them**, same as above. Vercel only injects env vars into deployments created after the vars are saved, so until you redeploy, the running function still sees both as unset and skips the forward while the form keeps returning `{"ok":true}`. That happened on the 2026-08-26 rollout: the app side was redeployed and worked, the site side was not, so submissions reached the inbox but never the app. A `200` from the form proves nothing about the forward — confirm it by submitting a test proposal and checking that it lands in the app's inquiry queue.
+
 ## Print to PDF
 
 The brand-package documents are letter-size and print clean. From any open file: `Cmd+P` → **Save as PDF**.
