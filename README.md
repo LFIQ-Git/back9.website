@@ -26,6 +26,18 @@ Open `index.html` in any browser. No build step required — pure static HTML/CS
 open index.html
 ```
 
+For the Cloudflare Worker path, install dependencies and start Wrangler:
+
+```bash
+npm install
+cp .dev.vars.example .dev.vars
+# Add local-only values to .dev.vars, then:
+npm run dev:cloudflare
+```
+
+The Worker serves the same static site and handles `/api/submit`. The original
+Vercel deployment path remains available during migration.
+
 ## Deploy to Vercel
 
 This is a zero-config static site with one serverless function (`api/submit.js`). No `package.json`, no framework — Vercel serves the static files directly and runs the function on demand.
@@ -60,6 +72,37 @@ git push
 ```
 
 Vercel auto-deploys on every push to `main`.
+
+## Deploy to Cloudflare Workers
+
+Cloudflare deployment is configured in `wrangler.jsonc` as the
+`backnine-trades` Worker for `backninetrades.com`. Before the first production
+deployment, confirm that neither the Worker name nor custom domain is attached
+to another service.
+
+1. Build and validate the Worker without deploying:
+   ```bash
+   npm install
+   npm run check
+   npm run build:cloudflare
+   ```
+2. Authenticate Wrangler and inventory the existing account, Worker, domain,
+   routes, and binding names. Do not deploy until ownership is confirmed.
+3. Add `RESEND_API_KEY` as an encrypted Worker secret:
+   ```bash
+   npx wrangler secret put RESEND_API_KEY
+   ```
+4. If inquiry forwarding is enabled, add `B9_INQUIRY_WEBHOOK_URL` and
+   `B9_INQUIRY_SECRET` as encrypted Worker secrets in the same way.
+5. Deploy only after all required bindings are present:
+   ```bash
+   npm run deploy:cloudflare
+   ```
+6. Verify `https://backninetrades.com/`, a static image, and a safe portal form
+   submission before changing or retiring the Vercel project.
+
+Wrangler reads local development secrets from `.dev.vars`, which is ignored by
+Git. Never place secret values in `wrangler.jsonc` or command arguments.
 
 ## Portal forms backend
 

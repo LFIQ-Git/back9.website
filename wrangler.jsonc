@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "backnine-trades",
+  "main": "./worker/index.mjs",
+  "compatibility_date": "2026-09-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "backninetrades.com",
+      "custom_domain": true
+    }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "drop-trailing-slash"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "DEPLOYMENT_ENV": "production",
+    "LEAD_INBOX": "info@back9trades.com",
+    "LEAD_FROM": "Back9 Trades Portal <portal@back9trades.com>"
+  },
+  "secrets": {
+    "required": ["RESEND_API_KEY"]
+  }
+}
