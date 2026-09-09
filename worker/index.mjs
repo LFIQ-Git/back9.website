@@ -15,11 +15,11 @@ function withSecurityHeaders(response) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
 
     if (pathname === "/api/submit") {
-      return withSecurityHeaders(await handleSubmit(request, env));
+      return withSecurityHeaders(await handleSubmit(request, env, ctx));
     }
     if (pathname.startsWith("/api/")) {
       return withSecurityHeaders(
