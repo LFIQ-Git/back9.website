@@ -2,7 +2,6 @@
   "name": "backnine-trades-website",
   "private": true,
   "scripts": {
-    "build": "npm run build:static",
     "build:static": "node scripts/build-static.mjs",
     "dev": "npm run dev:cloudflare",
     "dev:cloudflare": "npm run build:static && wrangler dev",
