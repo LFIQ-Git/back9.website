@@ -44,6 +44,32 @@ test("validates required fields and email", async () => {
   assert.equal(invalidEmail.status, 400);
 });
 
+test("cancels streamed request bodies that exceed the size limit", async () => {
+  let chunksRead = 0;
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) {
+      chunksRead += 1;
+      controller.enqueue(new Uint8Array(32 * 1024));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  const oversized = new Request(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    duplex: "half",
+  });
+
+  const response = await handleSubmit(oversized, env);
+
+  assert.equal(response.status, 413);
+  assert.equal(cancelled, true);
+  assert.ok(chunksRead < 4);
+});
+
 test("submits email and forwards a normalized payload", async () => {
   const calls = [];
   const fetcher = async (url, init) => {
