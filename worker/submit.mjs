@@ -151,7 +151,7 @@ async function forwardToApp(payload, env, fetcher) {
   }
 }
 
-export async function handleSubmit(request, env, fetcher = fetch) {
+export async function handleSubmit(request, env, executionContext, fetcher = fetch) {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, 405, { Allow: "POST" });
   }
@@ -202,6 +202,11 @@ export async function handleSubmit(request, env, fetcher = fetch) {
     return json({ error: "Email service rejected the request." }, 502);
   }
 
-  await forwardToApp(payload, env, fetcher);
+  const forwarding = forwardToApp(payload, env, fetcher);
+  if (executionContext?.waitUntil) {
+    executionContext.waitUntil(forwarding);
+  } else {
+    await forwarding;
+  }
   return json({ ok: true });
 }
