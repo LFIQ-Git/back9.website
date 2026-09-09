@@ -1,0 +1,23 @@
+{
+  "name": "backnine-trades-website",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:static",
+    "build:static": "node scripts/build-static.mjs",
+    "dev": "npm run dev:cloudflare",
+    "dev:cloudflare": "npm run build:static && wrangler dev",
+    "preview:cloudflare": "npm run dev:cloudflare",
+    "build:cloudflare": "npm run build:static && wrangler deploy --dry-run --outdir .wrangler-dist",
+    "deploy:cloudflare": "npm run build:static && wrangler deploy",
+    "deploy:cloudflare:dry-run": "npm run build:cloudflare",
+    "cf-typegen": "wrangler types",
+    "test": "node --test",
+    "check": "node --check api/submit.js && node --check worker/index.mjs && node --check worker/submit.mjs && npm test"
+  },
+  "devDependencies": {
+    "wrangler": "4.130.0"
+  },
+  "overrides": {
+    "sharp": "0.35.4"
+  }
+}
