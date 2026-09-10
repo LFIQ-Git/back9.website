@@ -4,7 +4,7 @@ import test from "node:test";
 import worker from "./index.mjs";
 import { handleSubmit } from "./submit.mjs";
 
-const endpoint = "https://backninetrades.com/api/submit";
+const endpoint = "https://back9trades.com/api/submit";
 const env = {
   RESEND_API_KEY: "test-key",
   LEAD_INBOX: "dispatch@example.com",
@@ -44,6 +44,32 @@ test("validates required fields and email", async () => {
   assert.equal(invalidEmail.status, 400);
 });
 
+test("cancels streamed request bodies that exceed the size limit", async () => {
+  let chunksRead = 0;
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) {
+      chunksRead += 1;
+      controller.enqueue(new Uint8Array(32 * 1024));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  const oversized = new Request(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    duplex: "half",
+  });
+
+  const response = await handleSubmit(oversized, env);
+
+  assert.equal(response.status, 413);
+  assert.equal(cancelled, true);
+  assert.ok(chunksRead < 4);
+});
+
 test("submits email and forwards a normalized payload", async () => {
   const calls = [];
   const fetcher = async (url, init) => {
@@ -63,6 +89,7 @@ test("submits email and forwards a normalized payload", async () => {
       B9_INQUIRY_WEBHOOK_URL: "https://app.example.com/inquiries",
       B9_INQUIRY_SECRET: "webhook-secret",
     },
+    undefined,
     fetcher
   );
 
@@ -80,6 +107,7 @@ test("returns JSON when Resend is unavailable", async () => {
   const response = await handleSubmit(
     request({ name: "Jane", email: "jane@example.com", description: "Repair" }),
     env,
+    undefined,
     async () => {
       throw new Error("network unavailable");
     }
@@ -90,8 +118,44 @@ test("returns JSON when Resend is unavailable", async () => {
   assert.deepEqual(await response.json(), { error: "Could not reach the email service." });
 });
 
+test("returns before optional forwarding finishes and registers its promise", { timeout: 500 }, async () => {
+  let finishForwarding;
+  let forwardingCompleted = false;
+  const registered = [];
+  const forwardingResponse = new Promise((resolve) => {
+    finishForwarding = () => resolve(new Response(null, { status: 200 }));
+  });
+  const fetcher = async (url) => {
+    if (url === "https://api.resend.com/emails") {
+      return new Response(null, { status: 200 });
+    }
+    const response = await forwardingResponse;
+    forwardingCompleted = true;
+    return response;
+  };
+
+  const response = await handleSubmit(
+    request({ name: "Jane", email: "jane@example.com", description: "Repair" }),
+    {
+      ...env,
+      B9_INQUIRY_WEBHOOK_URL: "https://app.example.com/inquiries",
+      B9_INQUIRY_SECRET: "webhook-secret",
+    },
+    { waitUntil: (promise) => registered.push(promise) },
+    fetcher
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(forwardingCompleted, false);
+  assert.equal(registered.length, 1);
+
+  finishForwarding();
+  await registered[0];
+  assert.equal(forwardingCompleted, true);
+});
+
 test("serves static assets with the existing security headers", async () => {
-  const response = await worker.fetch(new Request("https://backninetrades.com/"), {
+  const response = await worker.fetch(new Request("https://back9trades.com/"), {
     ASSETS: {
       fetch: async () =>
         new Response("<html></html>", {

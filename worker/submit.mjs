@@ -94,10 +94,29 @@ async function readPayload(request) {
     return { error: json({ error: "Request is too large." }, 413) };
   }
 
-  const rawBody = await request.text();
-  if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
-    return { error: json({ error: "Request is too large." }, 413) };
+  const reader = request.body?.getReader();
+  const chunks = [];
+  let bodyLength = 0;
+
+  while (reader) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    bodyLength += value.byteLength;
+    if (bodyLength > MAX_BODY_BYTES) {
+      await reader.cancel();
+      return { error: json({ error: "Request is too large." }, 413) };
+    }
+    chunks.push(value);
   }
+
+  const body = new Uint8Array(bodyLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const rawBody = new TextDecoder().decode(body);
 
   try {
     const parsed = JSON.parse(rawBody);
@@ -132,7 +151,7 @@ async function forwardToApp(payload, env, fetcher) {
   }
 }
 
-export async function handleSubmit(request, env, fetcher = fetch) {
+export async function handleSubmit(request, env, executionContext, fetcher = fetch) {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, 405, { Allow: "POST" });
   }
@@ -183,6 +202,11 @@ export async function handleSubmit(request, env, fetcher = fetch) {
     return json({ error: "Email service rejected the request." }, 502);
   }
 
-  await forwardToApp(payload, env, fetcher);
+  const forwarding = forwardToApp(payload, env, fetcher);
+  if (executionContext?.waitUntil) {
+    executionContext.waitUntil(forwarding);
+  } else {
+    await forwarding;
+  }
   return json({ ok: true });
 }
