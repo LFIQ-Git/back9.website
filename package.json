@@ -1,5 +1,5 @@
 {
-  "name": "backnine-trades-website",
+  "name": "back9-website",
   "private": true,
   "scripts": {
     "build:static": "node scripts/build-static.mjs",
@@ -11,7 +11,7 @@
     "deploy:cloudflare:dry-run": "npm run build:cloudflare",
     "cf-typegen": "wrangler types",
     "test": "node --test",
-    "check": "node --check api/submit.js && node --check worker/index.mjs && node --check worker/submit.mjs && npm test"
+    "check": "node --check worker/index.mjs && node --check worker/submit.mjs && npm test"
   },
   "devDependencies": {
     "wrangler": "4.130.0"

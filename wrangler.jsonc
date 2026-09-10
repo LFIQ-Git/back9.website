@@ -1,14 +1,14 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "backnine-trades",
+  "name": "back9-website",
   "main": "./worker/index.mjs",
-  "compatibility_date": "2026-09-08",
+  "compatibility_date": "2026-09-10",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": false,
   "routes": [
     {
-      "pattern": "backninetrades.com",
+      "pattern": "back9trades.com",
       "custom_domain": true
     }
   ],

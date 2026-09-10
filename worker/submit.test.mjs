@@ -4,7 +4,7 @@ import test from "node:test";
 import worker from "./index.mjs";
 import { handleSubmit } from "./submit.mjs";
 
-const endpoint = "https://backninetrades.com/api/submit";
+const endpoint = "https://back9trades.com/api/submit";
 const env = {
   RESEND_API_KEY: "test-key",
   LEAD_INBOX: "dispatch@example.com",
@@ -155,7 +155,7 @@ test("returns before optional forwarding finishes and registers its promise", { 
 });
 
 test("serves static assets with the existing security headers", async () => {
-  const response = await worker.fetch(new Request("https://backninetrades.com/"), {
+  const response = await worker.fetch(new Request("https://back9trades.com/"), {
     ASSETS: {
       fetch: async () =>
         new Response("<html></html>", {

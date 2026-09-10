@@ -1,13 +1,15 @@
-# Backnine Trades — backninetrades.com
+# Backnine Trades — back9trades.com
 
 Client-facing marketing site for Backnine Trades, a third-party R&M operating company serving SF Bay Area multifamily, plus the internal brand package.
+
+This site is a Cloudflare Worker (`back9-website`) with static assets. There is no Vercel, Clerk, or Next.js path.
 
 ## Contents
 
 | File | Purpose |
 |------|---------|
 | `index.html` | Client-facing marketing homepage: services, team, process, compliance, client portal (work order + proposal forms), FAQ |
-| `api/submit.js` | Vercel serverless function — receives portal form submissions and emails them to the dispatch inbox via Resend (zero dependencies, REST call) |
+| `worker/` | Cloudflare Worker — serves static files and handles `/api/submit` |
 | `package.html` | Internal brand package index (formerly the homepage) |
 | `flyer.html` | One-page sales flyer for prospective 3rd-party PMs |
 | `naming.html` | Naming decision record — shortlist, domains, risk assessment |
@@ -26,110 +28,77 @@ Open `index.html` in any browser. No build step required — pure static HTML/CS
 open index.html
 ```
 
-For the Cloudflare Worker path, install dependencies and start Wrangler:
+For the Cloudflare Worker path:
 
 ```bash
 npm install
 cp .dev.vars.example .dev.vars
 # Add local-only values to .dev.vars, then:
-npm run dev:cloudflare
+npm run dev
 ```
 
-The Worker serves the same static site and handles `/api/submit`. The original
-Vercel deployment path remains available during migration.
-
-## Deploy to Vercel
-
-This is a zero-config static site with one serverless function (`api/submit.js`). No `package.json`, no framework — Vercel serves the static files directly and runs the function on demand.
-
-### One-time setup
-
-1. **Push to GitHub** (or GitLab/Bitbucket):
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial Backnine brand package"
-   gh repo create backnine-site --public --source=. --push
-   ```
-
-2. **Connect to Vercel**:
-   - Go to https://vercel.com/new
-   - Import the `backnine-site` repo
-   - Framework preset: **Other** (static)
-   - Output directory: leave blank (root)
-   - Click **Deploy**
-
-3. **Custom domain** (optional):
-   - In Vercel project settings → Domains, add `backninetrades.com`
-   - Update DNS at your registrar to point to Vercel
-
-### Subsequent updates
-
-```bash
-git add .
-git commit -m "Update flyer copy"
-git push
-```
-
-Vercel auto-deploys on every push to `main`.
+The Worker serves the static site and handles `/api/submit`.
 
 ## Deploy to Cloudflare Workers
 
-Cloudflare deployment is configured in `wrangler.jsonc` as the
-`backnine-trades` Worker for `backninetrades.com`. Before the first production
-deployment, confirm that neither the Worker name nor custom domain is attached
-to another service.
+`wrangler.jsonc` deploys Worker `back9-website` on `back9trades.com`. That apex Worker record already exists in DNS. `home.back9trades.com` is a different Worker (`back9-home`) — do not attach it here.
 
-1. Build and validate the Worker without deploying:
+Mail, Resend DKIM, Microsoft 365, and SES records on this zone must stay untouched.
+
+1. Validate without deploying:
    ```bash
    npm install
    npm run check
    npm run build:cloudflare
    ```
-2. Authenticate Wrangler and inventory the existing account, Worker, domain,
-   routes, and binding names. Do not deploy until ownership is confirmed.
-3. Add `RESEND_API_KEY` as an encrypted Worker secret:
+2. Confirm Worker `back9-website` and custom domain `back9trades.com` in the Cloudflare account. Do not deploy over a different Worker.
+3. Add encrypted secrets (names only; never put values in `wrangler.jsonc` or command arguments):
    ```bash
    npx wrangler secret put RESEND_API_KEY
    ```
-4. If inquiry forwarding is enabled, add `B9_INQUIRY_WEBHOOK_URL` and
-   `B9_INQUIRY_SECRET` as encrypted Worker secrets in the same way.
-5. Deploy only after all required bindings are present:
+   If inquiry forwarding is enabled, also add `B9_INQUIRY_WEBHOOK_URL` and `B9_INQUIRY_SECRET`.
+4. Deploy:
    ```bash
    npm run deploy:cloudflare
    ```
-6. Verify `https://backninetrades.com/`, a static image, and a safe portal form
-   submission before changing or retiring the Vercel project.
+5. Verify `https://back9trades.com/`, a static image, and a safe portal form submission.
 
-Wrangler reads local development secrets from `.dev.vars`, which is ignored by
-Git. Never place secret values in `wrangler.jsonc` or command arguments.
+Wrangler reads local secrets from `.dev.vars` (gitignored).
+
+### DNS notes for `back9trades.com`
+
+Keep: CAA, Outlook MX/autodiscover, SPF, Microsoft/Google verification, Resend DKIM, `send.back9trades.com` SES records, Worker `back9-website` at apex, Worker `back9-home` at `home.back9trades.com`.
+
+Fix in the dashboard (not in this repo):
+
+- Delete `_domainconnect` CNAME to `_domainconnect.vercel-dns.com` (Vercel leftover).
+- Set `autodiscover.back9trades.com` to **DNS only**. Proxying Outlook autodiscover breaks Microsoft 365.
+
+Internal apps use Cloudflare Access. This public marketing site is not behind Access and does not use Clerk.
 
 ## Portal forms backend
 
-The work-order and proposal forms POST JSON to `/api/submit`, which sends each submission as an email via [Resend](https://resend.com). The function is dependency-free (a single REST call), so the site stays zero-config.
+Work-order and proposal forms POST JSON to `/api/submit`. The Worker emails each submission via [Resend](https://resend.com).
 
-### One-time setup (required for forms to send)
+### One-time setup
 
-1. **Create a Resend account** at https://resend.com and generate an API key.
-2. **Verify the domain** `back9trades.com` in Resend → Domains (this is the email domain; the marketing site is served from backninetrades.com — the two can differ). Resend gives you DKIM/SPF DNS records to add at the registrar (or in Vercel DNS if the domain is managed there). Until the domain is verified, Resend will only deliver mail sent from `onboarding@resend.dev`, and only to the Resend account owner's address — fine for a first test, not for production.
-3. **Set environment variables** in Vercel → Project → Settings → Environment Variables (Production + Preview):
-   - `RESEND_API_KEY` — the Resend API key (`re_...`)
-   - `LEAD_INBOX` — where submissions land (default `info@back9trades.com`)
-   - `LEAD_FROM` — verified sender, e.g. `Back9 Trades Portal <portal@back9trades.com>` (use `Back9 Trades Portal <onboarding@resend.dev>` for the pre-verification test)
-4. **Redeploy** so the function picks up the env vars.
+1. Create a Resend account and API key.
+2. Verify `back9trades.com` in Resend → Domains and keep the existing DKIM/SPF records in Cloudflare DNS.
+3. Store Worker secrets / vars:
+   - `RESEND_API_KEY` — encrypted secret
+   - `LEAD_INBOX` — default `info@back9trades.com` (Wrangler var)
+   - `LEAD_FROM` — verified sender, e.g. `Back9 Trades Portal <portal@back9trades.com>` (Wrangler var)
 
-Each email's `reply_to` is set to the submitter, so replying from the inbox goes straight back to the prospect. A hidden honeypot field blocks basic spam bots. If `RESEND_API_KEY` is missing, the form shows an error telling the visitor to email `info@back9trades.com` directly — it never silently drops a lead.
+Each email's `reply_to` is the submitter. A hidden honeypot blocks basic spam. If `RESEND_API_KEY` is missing, the form tells the visitor to email `info@back9trades.com` — it never silently drops a lead.
 
 ### Optional: forward inquiries to back9.home
 
-`/api/submit` can also forward the same submission to the back9.home app's inquiry intake webhook, in addition to the Resend email above (which remains the fallback record regardless). Set these in Vercel (Production + Preview) to enable it:
+Set these encrypted Worker secrets to also POST to the back9.home inquiry webhook:
 
-- `B9_INQUIRY_WEBHOOK_URL` — back9.home's inquiry webhook endpoint
-- `B9_INQUIRY_SECRET` — shared bearer secret for that endpoint
+- `B9_INQUIRY_WEBHOOK_URL`
+- `B9_INQUIRY_SECRET`
 
-If either var is unset, forwarding is skipped silently and the site works exactly as before. The forward call is best-effort — it can never fail the form submission; failures are logged to the Vercel function log only.
-
-**Redeploy after setting them**, same as above. Vercel only injects env vars into deployments created after the vars are saved, so until you redeploy, the running function still sees both as unset and skips the forward while the form keeps returning `{"ok":true}`. That happened on the 2026-08-26 rollout: the app side was redeployed and worked, the site side was not, so submissions reached the inbox but never the app. A `200` from the form proves nothing about the forward — confirm it by submitting a test proposal and checking that it lands in the app's inquiry queue.
+If either is unset, forwarding is skipped. Email still sends. Forwarding is best-effort and cannot fail the form. A `200` from the form does not prove the webhook ran — confirm a test proposal in the app inquiry queue.
 
 ## Print to PDF
 
