@@ -13,7 +13,7 @@ const files = [
   "logos.html",
   "b9.png",
 ];
-const directories = ["images", "archive", "docs", "structure"];
+const directories = ["images", "fonts", "archive", "docs", "structure"];
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
