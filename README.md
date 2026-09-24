@@ -56,7 +56,7 @@ Mail, Resend DKIM, Microsoft 365, and SES records on this zone must stay untouch
    ```bash
    npx wrangler secret put RESEND_API_KEY
    ```
-   If inquiry forwarding is enabled, also add `B9_INQUIRY_WEBHOOK_URL` and `B9_INQUIRY_SECRET`.
+   Also add `B9_INQUIRY_SECRET` (it must equal `INQUIRY_WEBHOOK_SECRET` on `back9-agent`). `B9_INQUIRY_WEBHOOK_URL` is a var in `wrangler.jsonc`, not a secret.
 4. Deploy:
    ```bash
    npm run deploy:cloudflare
@@ -91,12 +91,12 @@ Work-order and proposal forms POST JSON to `/api/submit`. The Worker emails each
 
 Each email's `reply_to` is the submitter. A hidden honeypot blocks basic spam. If `RESEND_API_KEY` is missing, the form tells the visitor to email `info@back9trades.com` — it never silently drops a lead.
 
-### Optional: forward inquiries to back9.home
+### Forward inquiries to agent.back9
 
-Set these encrypted Worker secrets to also POST to the back9.home inquiry webhook:
+Every form submission is also POSTed to the inquiry webhook on agent.back9 (back9.operations):
 
-- `B9_INQUIRY_WEBHOOK_URL`
-- `B9_INQUIRY_SECRET`
+- `B9_INQUIRY_WEBHOOK_URL` — `https://agent.back9trades.com/api/inquiries`, set in `wrangler.jsonc` vars (an address, not a secret)
+- `B9_INQUIRY_SECRET` — encrypted Worker secret; must equal `INQUIRY_WEBHOOK_SECRET` on Worker `back9-agent`
 
 If either is unset, forwarding is skipped. Email still sends. Forwarding is best-effort and cannot fail the form. A `200` from the form does not prove the webhook ran — confirm a test proposal in the app inquiry queue.
 

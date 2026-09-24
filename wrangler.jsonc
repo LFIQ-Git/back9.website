@@ -22,6 +22,7 @@
     "enabled": true
   },
   "vars": {
+    "B9_INQUIRY_WEBHOOK_URL": "https://agent.back9trades.com/api/inquiries",
     "DEPLOYMENT_ENV": "production",
     "LEAD_INBOX": "info@back9trades.com",
     "LEAD_FROM": "Back9 Trades Portal <portal@back9trades.com>"
