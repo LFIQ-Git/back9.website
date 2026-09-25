@@ -119,6 +119,10 @@ footer{background:var(--navy-900);color:var(--on-dark);padding:72px 0 32px}
 .fcol{flex:1 1 180px;display:flex;flex-direction:column;gap:12px;font-size:14px}.fcol h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--peach);margin:0 0 4px}
 .fcol a{color:var(--on-dark);text-decoration:none}.fcol a:hover{color:var(--peach)}
 .legal{margin-top:48px;padding-top:24px;border-top:1px solid var(--border-dark);font-size:12px;color:var(--on-dark-muted);letter-spacing:.02em}
+.legal{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
+.legal .staff{opacity:.55}
+.legal .staff a{color:inherit;text-decoration:none;border-bottom:1px dotted currentColor}
+.legal .staff:hover,.legal .staff:focus-within{opacity:1}.legal .staff a:hover,.legal .staff a:focus-visible{color:var(--on-dark)}
 @media (max-width:980px){.menu-btn{display:inline-block}.nav{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:flex-start;gap:16px;padding:20px 32px 24px;background:var(--ivory);border-bottom:1px solid var(--border);box-shadow:var(--shadow-md)}.nav.open{display:flex}.comp-l{position:static}}
 @media (max-width:560px){.wrap{padding:0 20px}.sec{padding:72px 0}.cmp .r{grid-template-columns:1fr}.cmp .hd{display:none}.cmp .r>div:nth-child(2)::before{content:"Today: ";font-weight:700}.tab9{left:12px}.crew{padding:28px}.crew img{width:160px;height:160px}.faq details p{padding-right:0}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
@@ -131,7 +135,7 @@ footer{background:var(--navy-900);color:var(--on-dark);padding:72px 0 32px}
 <button class="menu-btn" aria-expanded="false" aria-controls="nav">Menu</button>
 <nav id="nav" class="nav">
 <a class="l" href="#why">Why Back9</a><a class="l" href="#services">Services</a><a class="l" href="#compliance">Compliance</a><a class="l" href="#process">How We Work</a><a class="l" href="#faq">FAQ</a>
-<a class="btn btn-ghost btn-sm" href="https://client.back9trades.com">Client Portal</a>
+<a class="btn btn-ghost btn-sm" href="https://clienthub.getjobber.com/client_hubs/146c1ce2-51c9-4d35-b14c-9f14af4d49d2/login/new?source=share_login">Client Portal</a>
 <a class="btn btn-accent btn-sm" href="#portal" data-form="proposal">Request a Proposal</a>
 </nav></div></header>
 <main>
@@ -306,9 +310,9 @@ footer{background:var(--navy-900);color:var(--on-dark);padding:72px 0 32px}
 <div class="fgrid">
 <div class="fbrand"><a href="#top" class="wm" aria-label="Back9 Trades"><span class="wm-top">Back<i>9</i></span><span class="wm-sub">Trades</span></a><p>Repair and maintenance built for SF multifamily operators. Backed by veteran San Francisco multifamily operators.</p></div>
 <div class="fcol"><h4>Services</h4><a href="#services">Maintenance &amp; Work Orders</a><a href="#services">24/7 Emergency</a><a href="#services">Unit Turns</a><a href="#services">Recurring Services</a></div>
-<div class="fcol"><h4>Contact</h4><a href="mailto:info@back9trades.com">info@back9trades.com</a><span>San Francisco Bay Area</span><a href="https://client.back9trades.com">Client Portal</a></div>
+<div class="fcol"><h4>Contact</h4><a href="mailto:info@back9trades.com">info@back9trades.com</a><span>San Francisco Bay Area</span><a href="https://clienthub.getjobber.com/client_hubs/146c1ce2-51c9-4d35-b14c-9f14af4d49d2/login/new?source=share_login">Client Portal</a></div>
 </div>
-<div class="legal">Backnine Trades · Licensed CA Contractor · Fully insured · W/C &amp; GL on file · San Francisco Bay Area</div>
+<div class="legal"><span>Backnine Trades · Licensed CA Contractor · Fully insured · W/C &amp; GL on file · San Francisco Bay Area</span><nav class="staff" aria-label="Staff sign-in">Staff sign-in: <a href="https://home.back9trades.com" rel="nofollow">Operations</a> · <a href="https://agent.back9trades.com" rel="nofollow">Dispatch Agent</a></nav></div>
 </div></footer>
 <script>
 (function(){
