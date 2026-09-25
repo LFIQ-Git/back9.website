@@ -10,6 +10,12 @@
     {
       "pattern": "back9trades.com",
       "custom_domain": true
+    },
+    // The old Client Portal address: worker/index.mjs redirects every request
+    // on it to the Jobber Client Hub.
+    {
+      "pattern": "client.back9trades.com",
+      "custom_domain": true
     }
   ],
   "assets": {
