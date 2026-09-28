@@ -1,6 +1,6 @@
-# Backnine Trades — back9trades.com
+# Back9 Trades — back9trades.com
 
-Client-facing marketing site for Backnine Trades, a third-party R&M operating company serving SF Bay Area multifamily, plus the internal brand package.
+Client-facing marketing site for Back9 Trades, a third-party R&M operating company serving SF Bay Area multifamily, plus the internal brand package.
 
 This site is a Cloudflare Worker (`back9-website`) with static assets. There is no Vercel, Clerk, or Next.js path.
 
