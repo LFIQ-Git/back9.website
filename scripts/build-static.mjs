@@ -11,6 +11,9 @@ const files = [
   "flyer.html",
   "naming.html",
   "logos.html",
+  "terms.html",
+  "privacy.html",
+  "legal.css",
   "b9.png",
 ];
 const directories = ["images", "fonts", "archive", "docs", "structure"];
