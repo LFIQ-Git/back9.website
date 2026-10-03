@@ -15,10 +15,18 @@ This site is a Cloudflare Worker (`back9-website`) with static assets. There is 
 | `naming.html` | Naming decision record — shortlist, domains, risk assessment |
 | `logos.html` | Logo lockup options (selected mark + alternates) |
 | `images/` | Site photography (SF cityscape + in-unit trade work) |
+| `robots.txt` | Keeps the internal brand pages out of search |
+| `archive/`, `docs/`, `structure/` | Internal and partner-confidential files. Kept in the repo, never published (see below) |
 
 The homepage was rebuilt 2026-06-12 against the competitive survey in `../docs/Competitive_Survey_SF_Handyman_CM_2026-06-12.md`. Portal forms POST to `/api/submit`, which emails each submission to the dispatch inbox via Resend (see **Portal forms backend** below). Do not add license numbers, insurance limits, phone numbers, or testimonials until they are real.
 
 **Photos are licensed stock placeholders, not Back9's own work.** The images in `images/` are from Pexels (Pexels License — free for commercial use, no attribution required) and are used as representative atmosphere, not captioned as our crew or buildings. Swap them for real Back9 job-site and team photos when available. Sourced 2026-06-26: `sf-skyline-dusk` (hero), `sf-street` (about), `sf-skyline-day` (compliance banner), `work-plumbing` / `work-outlet` / `work-painting` (Services trade strip).
+
+## What gets published
+
+`scripts/build-static.mjs` copies the pages, `legal.css`, `b9.png`, `robots.txt`, `images/` and `fonts/` into `dist/`, and the Worker serves everything in `dist/` publicly. `archive/`, `docs/` and `structure/` are deliberately left out; `scripts/build-static.test.mjs` fails the build if they reappear. `package.html`, `naming.html` and `logos.html` are reachable but marked `noindex`.
+
+Merging to `main` deploys through Cloudflare Workers Builds. GitHub Actions (`.github/workflows/ci.yml`) runs `npm run check` and `npm run build:cloudflare` on every pull request.
 
 ## Local preview
 
