@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo \"back9.website on $(git branch --show-current 2>/dev/null): public site, read CLAUDE.md. Checks: npm run check && npm run build:cloudflare\" && git status --short | head -20"
+          }
+        ]
+      }
+    ]
+  }
+}

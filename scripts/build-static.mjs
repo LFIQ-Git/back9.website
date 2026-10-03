@@ -15,8 +15,11 @@ const files = [
   "privacy.html",
   "legal.css",
   "b9.png",
+  "robots.txt",
 ];
-const directories = ["images", "fonts", "archive", "docs", "structure"];
+// archive/, docs/ and structure/ hold internal and partner-confidential files.
+// They stay in the repo and are never copied into the public site.
+const directories = ["images", "fonts"];
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
