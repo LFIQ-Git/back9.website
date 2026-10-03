@@ -18,3 +18,13 @@ test("the main site still serves its pages", async () => {
   assert.equal(res.status, 200);
   assert.equal(await res.text(), "site");
 });
+
+test("every response carries the security headers", async () => {
+  const res = await worker.fetch(new Request("https://back9trades.com/"), env, {});
+  assert.equal(res.headers.get("X-Content-Type-Options"), "nosniff");
+  assert.equal(res.headers.get("X-Frame-Options"), "SAMEORIGIN");
+  assert.equal(
+    res.headers.get("Permissions-Policy"),
+    "camera=(), microphone=(), geolocation=(), payment=()"
+  );
+});

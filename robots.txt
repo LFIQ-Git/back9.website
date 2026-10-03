@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /package
+Disallow: /naming
+Disallow: /logos
+Disallow: /api/

@@ -4,6 +4,7 @@ const SECURITY_HEADERS = {
   "X-Frame-Options": "SAMEORIGIN",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
 };
 
 // client.back9trades.com is the old Client Portal address, printed and saved
